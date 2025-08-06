@@ -6,14 +6,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Building2, Lock, User, AlertCircle } from "lucide-react"
-import { authenticateUser } from "@/lib/auth"
+import { signInWithEmailAndPassword } from "firebase/auth"
+import { auth } from "@/lib/firebase"
 
 export default function LoginPage() {
   const [credentials, setCredentials] = useState({ username: "", password: "" })
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!credentials.username || !credentials.password) {
       setError("Preencha todos os campos")
       return
@@ -22,20 +23,35 @@ export default function LoginPage() {
     setLoading(true)
     setError("")
 
-    // Simular delay de autenticação
-    setTimeout(() => {
-      const user = authenticateUser(credentials.username, credentials.password)
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        credentials.username,
+        credentials.password
+      )
 
-      if (user) {
-        // Login válido - redirecionar para dashboard da empresa
-        localStorage.setItem("currentUser", JSON.stringify(user))
-        window.location.href = `/dashboard/${user.company.slug}`
-      } else {
-        setError("Usuário ou senha incorretos")
-      }
+      const email = userCredential.user.email || ""
 
-      setLoading(false)
-    }, 1000)
+      // Defina aqui o slug da empresa baseado no email
+      let companySlug = "default"
+
+      if (email.includes("ts3")) companySlug = "ts3"
+      else if (email.includes("alpha")) companySlug = "alpha"
+      else if (email.includes("beta")) companySlug = "beta"
+      else if (email.includes("admin")) companySlug = "admin"
+
+      // Salvar no localStorage para controle de sessão simples
+      localStorage.setItem("currentUser", JSON.stringify({ email, company: { slug: companySlug } }))
+
+      // Redirecionar para o dashboard específico
+      window.location.href = `/dashboard/${companySlug}`
+
+    } catch (err: any) {
+      console.error(err)
+      setError("Email ou senha inválidos")
+    }
+
+    setLoading(false)
   }
 
   return (
@@ -56,7 +72,6 @@ export default function LoginPage() {
             <CardDescription className="text-gray-400">Entre com suas credenciais</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Error Message */}
             {error && (
               <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-3 flex items-center gap-2">
                 <AlertCircle className="h-4 w-4 text-red-400" />
@@ -64,7 +79,6 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* Credenciais */}
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label className="text-yellow-400 font-medium">Usuário</Label>
@@ -107,20 +121,17 @@ export default function LoginPage() {
           </CardContent>
         </Card>
 
-        {/* Demo Info */}
+        {/* Info para teste */}
         <Card className="bg-gray-900/50 border-yellow-400/20">
           <CardContent className="pt-6">
             <div className="text-sm text-gray-400 space-y-2">
               <p className="text-center font-medium text-yellow-400">Logins de Demonstração:</p>
               <div className="grid grid-cols-1 gap-2 text-xs">
                 <div>
-                  <strong>Alpha:</strong> alpha / 123456
+                  <strong>ts3:</strong> ts3@ts3holdingsocial.com.br / senha
                 </div>
                 <div>
-                  <strong>Beta:</strong> beta / 123456
-                </div>
-                <div>
-                  <strong>Gamma:</strong> gamma / 123456
+                  <strong>admin:</strong> admin@empresa.com / senha
                 </div>
               </div>
             </div>

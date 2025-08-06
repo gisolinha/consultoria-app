@@ -53,17 +53,17 @@ export default function DashboardPage({ params }: { params: { company: string } 
   const renderSection = () => {
     switch (activeSection) {
       case "overview":
-        return <DashboardOverview company={company} data={companyData} />
+        return <DashboardOverview company={company} />
       case "documents":
-        return <DocumentsSection company={company} data={companyData} />
+        return <DocumentsSection company={company} />
       case "notices":
-        return <NoticesSection company={company} data={companyData} />
+        return <NoticesSection company={company} />
       case "tasks":
-        return <TasksSection company={company} data={companyData} />
+        return <TasksSection company={company} />
       case "reports":
-        return <ReportsSection company={company} data={companyData} />
+        return <ReportsSection company={company} />
       default:
-        return <DashboardOverview company={company} data={companyData} />
+        return <DashboardOverview company={company} />
     }
   }
 
@@ -74,10 +74,9 @@ export default function DashboardPage({ params }: { params: { company: string } 
           company={company}
           activeSection={activeSection}
           setActiveSection={setActiveSection}
-          currentUser={currentUser}
         />
         <main className="flex-1 bg-black">
-          <DashboardHeader company={company} currentUser={currentUser} />
+          <DashboardHeader company={company} />
           <div className="p-8 bg-black min-h-screen">{renderSection()}</div>
         </main>
       </SidebarProvider>
